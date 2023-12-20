@@ -1,0 +1,707 @@
+A51 MACRO ASSEMBLER  ANDRIOD                                                              12/11/2014 15:24:34 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.00d
+OBJECT MODULE PLACED IN .\andriod.obj
+ASSEMBLER INVOKED BY: C:\Keil\C51\BIN\A51.EXE ..\..\andriod.asm SET(SMALL) DEBUG PRINT(.\andriod.lst) OBJECT(.\andriod.o
+                      bj) EP
+
+LOC  OBJ            LINE     SOURCE
+
+                       1        
+                       2       
+                       3      
+                       4     
+  0080                 5             LCD_DPort EQU P0
+                       6             
+  0095                 7             LCD_Rs  EQU  P1.5
+  0096                 8             LCD_Rw  EQU  P1.6
+  0097                 9             LCD_En  EQU  P1.7
+                      10             
+                      11     
+  0030                12             DELAY1    DATA 30h
+  0031                13             DELAY2    DATA 31h
+  0032                14             DELAY3    DATA 32h
+  0061                15             VStack    DATA 61h
+                      16     
+  0001                17             FDispRFID Bit 01h
+                      18     
+                      19             
+                      20             
+0023                  21             org  23h
+0023 020316           22             ljmp serial_ISR
+                      23             
+0000                  24             org  00h
+                      25     
+                      26     
+0000 71CC             27             acall LCD_Init
+0002 7131             28             acall welcomedata
+0004 912E             29             call  delay1sec
+0006 758920           30             mov   TMOD,#20h
+0009 758DFD           31             mov   TH1,#0FDh
+000C 759850           32             mov   SCON,#50h
+000F 75A890           33             mov   IE,#90h
+0012 D28E             34             setb  TR1
+                      35     
+0014 11D9             36             Call  Btinit
+0016 912E             37             call  delay1sec
+0018 75A0F0           38             mov   P2,#0F0h
+001B 7900             39             MOV   R1,#00H
+                      40             
+                      41     
+001D                  42     MainLoop:
+                      43     
+                      44     
+                      45     
+                      46     
+                      47     
+                      48     
+                      49     
+001D 200133           50             jb FDispRFID,RFIDLoop 
+0020 9141             51             call delay500ms
+0022 80F9             52             jmp MainLoop
+                      53     
+                      54     
+                      55     
+                      56     
+                      57     
+A51 MACRO ASSEMBLER  ANDRIOD                                                              12/11/2014 15:24:34 PAGE     2
+
+                      58     
+                      59     
+                      60     
+                      61     
+                      62     
+                      63     
+                      64     
+                      65     
+                      66     
+                      67     
+                      68     
+                      69     
+                      70     
+                      71     
+                      72     
+                      73     
+                      74     
+                      75     
+                      76     
+                      77     
+                      78     
+                      79     
+                      80     
+                      81     
+                      82     
+                      83     
+                      84     
+                      85     
+                      86     
+                      87     
+                      88     
+                      89     
+                      90     
+                      91     
+                      92     
+                      93     
+                      94     
+                      95     
+                      96     
+                      97     
+                      98     
+                      99     
+                     100     
+                     101     
+                     102     
+                     103     
+                     104     
+                     105     
+                     106     
+                     107     
+                     108     
+                     109     
+                     110     
+                     111     
+                     112     
+                     113     
+                     114     
+                     115     
+                     116     
+                     117     
+                     118     
+                     119     
+0024                 120     Firesen:
+0024 75A000          121             mov   P2,#00h
+0027 911A            122             call lcdclear
+0029 911F            123             call displine1
+A51 MACRO ASSEMBLER  ANDRIOD                                                              12/11/2014 15:24:34 PAGE     3
+
+002B 900399          124             mov  dptr,#FierDisp
+002E 9110            125             call DISPDATA
+0030 912E            126             call delay1sec
+0032 9002A8          127             mov  dptr,#FIRE
+0035 710A            128             call serialsend
+0037 9141            129             call delay500ms 
+0039 7131            130             acall welcomedata
+003B 80E0            131             jmp Mainloop
+003D                 132     lightsen:
+003D 911A            133             call lcdclear
+003F 911F            134             call displine1
+0041 9003AA          135             mov  dptr,#liTEDisp
+0044 9110            136             call DISPDATA
+0046 912E            137             call delay1sec
+0048 900277          138             mov  dptr,#LITE
+004B 710A            139             call serialsend
+004D 9141            140             call delay500ms 
+004F 7131            141             acall welcomedata
+                     142     
+0051 80CA            143             jmp Mainloop      
+                     144     
+0053                 145     RFIDLoop:
+0053 C201            146             clr  FDispRFID 
+0055 B93817          147             cjne R1,#38h,backlp
+0058 75A055          148             mov  P2,#55h
+005B 911A            149             call lcdclear
+005D 911F            150             call displine1
+005F 90036D          151             mov  dptr,#BWD
+0062 9110            152             call DISPDATA
+0064 900182          153             mov  dptr,#robofwd
+0067 710A            154             call serialsend
+0069 9141            155             call delay500ms 
+006B 7131            156             acall welcomedata
+006D 80AE            157             jmp MainLoop
+006F                 158     backlp:
+006F B93217          159             cjne R1,#32h,rightlp
+0072 75A0AA          160             mov  P2,#0AAh
+0075 911A            161             call lcdclear
+0077 911F            162             call displine1
+0079 900362          163             mov  dptr,#FWD
+007C 9110            164             call DISPDATA
+007E 9001B3          165             mov  dptr,#robobwd
+0081 710A            166             call serialsend
+0083 9141            167             call delay500ms         
+0085 7131            168             acall welcomedata
+0087 8094            169             jmp MainLoop
+                     170     
+0089                 171     rightlp:
+0089 B93617          172             cjne R1,#36h,leftlp
+008C 75A022          173             mov  P2,#022h
+008F 911A            174             call lcdclear
+0091 911F            175             call displine1
+0093 900383          176             mov  dptr,#RT
+0096 9110            177             call DISPDATA
+0098 9001E4          178             mov  dptr,#robolft
+009B 710A            179             call serialsend
+009D 9141            180             call delay500ms  
+009F 7131            181             acall welcomedata
+00A1 011D            182             jmp MainLoop
+00A3                 183     leftlp:
+00A3 B93417          184             cjne R1,#34h,stop
+00A6 75A088          185             mov  P2,#88h
+00A9 911A            186             call lcdclear
+00AB 911F            187             call displine1
+00AD 900378          188             mov  dptr,#LFT
+00B0 9110            189             call DISPDATA
+A51 MACRO ASSEMBLER  ANDRIOD                                                              12/11/2014 15:24:34 PAGE     4
+
+                     190     
+00B2 900215          191             mov  dptr,#robort
+00B5 710A            192             call serialsend
+00B7 9141            193             call delay500ms    
+00B9 7131            194             acall welcomedata
+00BB 011D            195             jmp MainLoop
+                     196     
+                     197     
+00BD                 198     stop:
+00BD B93517          199             cjne R1,#35h,EXIT1
+00C0 75A000          200             mov  P2,#00h
+00C3 911A            201             call lcdclear
+00C5 911F            202             call displine1
+00C7 90038E          203             mov  dptr,#ST
+00CA 9110            204             call DISPDATA
+                     205     
+00CC 900246          206             mov  dptr,#robost
+00CF 710A            207             call serialsend
+00D1 9141            208             call delay500ms   
+00D3 7131            209             acall welcomedata
+00D5 011D            210             jmp MainLoop
+00D7                 211     EXIT1:
+00D7 011D            212             jmp MainLoop
+                     213     
+00D9                 214     Btinit:
+00D9 9000EF          215             mov  dptr,#mycmnd0
+00DC 710A            216             call serialsend
+00DE 912E            217             call delay1sec
+                     218     
+00E0 900120          219             mov  dptr,#mycmnd1
+00E3 710A            220             call serialsend
+00E5 912E            221             call delay1sec
+                     222             
+00E7 900151          223             mov  dptr,#mycmnd2
+00EA 710A            224             call serialsend
+00EC 912E            225             call delay1sec  
+                     226     
+00EE 22              227             ret     
+                     228     
+                     229     
+00EF 2A2A2A2A        230     mycmnd0:    DB "**********ANDROID BASED ROBOT CONTROL*********",0Dh,0Ah,0
+00F3 2A2A2A2A                
+00F7 2A2A414E                
+00FB 44524F49                
+00FF 44204241                
+0103 53454420                
+0107 524F424F                
+010B 5420434F                
+010F 4E54524F                
+0113 4C2A2A2A                
+0117 2A2A2A2A                
+011B 2A2A0D0A                
+011F 00                      
+0120 2A2A2A2A        231     mycmnd1:    DB "**********CONTROLKEYS: 2-FORWARD,8-BACKWARD***",0Dh,0Ah,0
+0124 2A2A2A2A                
+0128 2A2A434F                
+012C 4E54524F                
+0130 4C4B4559                
+0134 533A2032                
+0138 2D464F52                
+013C 57415244                
+0140 2C382D42                
+0144 41434B57                
+0148 4152442A                
+014C 2A2A0D0A                
+0150 00                      
+A51 MACRO ASSEMBLER  ANDRIOD                                                              12/11/2014 15:24:34 PAGE     5
+
+0151 2A2A2A2A        232     mycmnd2:    DB "**********4-RIGHT, 6-LEFT, 5-STOP*************",0Dh,0Ah,0 
+0155 2A2A2A2A                
+0159 2A2A342D                
+015D 52494748                
+0161 542C2036                
+0165 2D4C4546                
+0169 542C2035                
+016D 2D53544F                
+0171 502A2A2A                
+0175 2A2A2A2A                
+0179 2A2A2A2A                
+017D 2A2A0D0A                
+0181 00                      
+0182 2A2A2A2A        233     robofwd:    DB "**********ROBOT MOVING FORWARD****************",0Dh,0Ah,0
+0186 2A2A2A2A                
+018A 2A2A524F                
+018E 424F5420                
+0192 4D4F5649                
+0196 4E472046                
+019A 4F525741                
+019E 52442A2A                
+01A2 2A2A2A2A                
+01A6 2A2A2A2A                
+01AA 2A2A2A2A                
+01AE 2A2A0D0A                
+01B2 00                      
+01B3 2A2A2A2A        234     robobwd:    DB "**********ROBOT MOVING BACKWARD***************",0Dh,0Ah,0
+01B7 2A2A2A2A                
+01BB 2A2A524F                
+01BF 424F5420                
+01C3 4D4F5649                
+01C7 4E472042                
+01CB 41434B57                
+01CF 4152442A                
+01D3 2A2A2A2A                
+01D7 2A2A2A2A                
+01DB 2A2A2A2A                
+01DF 2A2A0D0A                
+01E3 00                      
+01E4 2A2A2A2A        235     robolft:    DB "**********ROBOT MOVING RIGHT******************",0Dh,0Ah,0
+01E8 2A2A2A2A                
+01EC 2A2A524F                
+01F0 424F5420                
+01F4 4D4F5649                
+01F8 4E472052                
+01FC 49474854                
+0200 2A2A2A2A                
+0204 2A2A2A2A                
+0208 2A2A2A2A                
+020C 2A2A2A2A                
+0210 2A2A0D0A                
+0214 00                      
+0215 2A2A2A2A        236     robort:     DB "**********ROBOT MOVING LEFT*******************",0Dh,0Ah,0
+0219 2A2A2A2A                
+021D 2A2A524F                
+0221 424F5420                
+0225 4D4F5649                
+0229 4E47204C                
+022D 4546542A                
+0231 2A2A2A2A                
+0235 2A2A2A2A                
+0239 2A2A2A2A                
+023D 2A2A2A2A                
+0241 2A2A0D0A                
+0245 00                      
+0246 2A2A2A2A        237     robost:     DB "**********ROBOT STOPPED***********************",0Dh,0Ah,0
+A51 MACRO ASSEMBLER  ANDRIOD                                                              12/11/2014 15:24:34 PAGE     6
+
+024A 2A2A2A2A                
+024E 2A2A524F                
+0252 424F5420                
+0256 53544F50                
+025A 5045442A                
+025E 2A2A2A2A                
+0262 2A2A2A2A                
+0266 2A2A2A2A                
+026A 2A2A2A2A                
+026E 2A2A2A2A                
+0272 2A2A0D0A                
+0276 00                      
+0277 2A2A2A2A        238     LITE:       DB "**********LIGHT DETECTED**********************",0Dh,0Ah,0
+027B 2A2A2A2A                
+027F 2A2A4C49                
+0283 47485420                
+0287 44455445                
+028B 43544544                
+028F 2A2A2A2A                
+0293 2A2A2A2A                
+0297 2A2A2A2A                
+029B 2A2A2A2A                
+029F 2A2A2A2A                
+02A3 2A2A0D0A                
+02A7 00                      
+02A8 2A2A2A2A        239     FIRE:       DB "**********FIRE DETECTED***********************",0Dh,0Ah,0
+02AC 2A2A2A2A                
+02B0 2A2A4649                
+02B4 52452044                
+02B8 45544543                
+02BC 5445442A                
+02C0 2A2A2A2A                
+02C4 2A2A2A2A                
+02C8 2A2A2A2A                
+02CC 2A2A2A2A                
+02D0 2A2A2A2A                
+02D4 2A2A0D0A                
+02D8 00                      
+02D9 2A2A2A2A        240     OBJ:        DB "**********OBJECT DETECTED*********************",0Dh,0Ah,0
+02DD 2A2A2A2A                
+02E1 2A2A4F42                
+02E5 4A454354                
+02E9 20444554                
+02ED 45435445                
+02F1 442A2A2A                
+02F5 2A2A2A2A                
+02F9 2A2A2A2A                
+02FD 2A2A2A2A                
+0301 2A2A2A2A                
+0305 2A2A0D0A                
+0309 00                      
+                     241     
+030A                 242     serialsend:
+030A                 243     looop:
+030A E4              244             clr  a
+030B 93              245             movc a,@a+dptr
+030C 6007            246             jz   exit
+030E F599            247             mov  SBUF,a
+0310 914E            248             call delay20ms
+0312 A3              249             inc  Dptr
+0313 80F5            250             jmp  looop
+0315                 251     exit:
+0315 22              252             ret      
+                     253     
+0316                 254     serial_ISR:
+0316 209804          255             jb   RI,RX_Service
+A51 MACRO ASSEMBLER  ANDRIOD                                                              12/11/2014 15:24:34 PAGE     7
+
+0319 20990F          256             jb   TI,TX_Service
+031C 32              257             reti
+                     258     
+031D                 259     RX_Service:
+031D C298            260             clr  RI 
+031F E599            261             mov  a,sbuf
+0321 F9              262             mov  R1,a
+0322 914E            263             call delay20ms
+0324 914E            264             call delay20ms
+0326 D201            265             setb FDispRFID
+0328 020330          266             ljmp End_isr
+032B                 267     TX_Service:
+032B C299            268             clr  TI
+032D 020330          269             ljmp End_isr
+                     270     
+0330                 271     End_isr:
+                     272             
+0330 32              273             reti
+                     274     
+                     275     
+                     276     
+0331                 277     welcomedata:
+0331 911A            278             call lcdclear
+0333 911F            279             call displine1
+0335 900342          280             mov  dptr,#mydata
+0338 9110            281             call DISPDATA
+                     282     
+033A 9124            283             call displine2
+033C 900351          284             mov  dptr,#mydata1
+033F 9110            285             call DISPDATA
+0341 22              286     ret
+0342 20414E44        287     mydata : DB" ANDROID BASED",0        
+0346 524F4944                
+034A 20424153                
+034E 454400                  
+0351 20524F42        288     mydata1: DB" ROBOT CONTROL  ",0
+0355 4F542043                
+0359 4F4E5452                
+035D 4F4C2020                
+0361 00                      
+0362 20464F52        289     FWD:     DB" FORWARD  ",0
+0366 57415244                
+036A 202000                  
+036D 20424143        290     BWD:     DB" BACKWARD ",0
+0371 4B574152                
+0375 442000                  
+0378 2020204C        291     LFT:     DB"   LEFT   ",0
+037C 45465420                
+0380 202000                  
+0383 20202052        292     RT:      DB"   RIGHT  ",0
+0387 49474854                
+038B 202000                  
+038E 20202053        293     ST:      DB"   STOP   ",0       
+0392 544F5020                
+0396 202000                  
+0399 20464952        294     FierDisp:DB" FIRE DETECTED  ",0
+039D 45204445                
+03A1 54454354                
+03A5 45442020                
+03A9 00                      
+03AA 204C4947        295     liTEDisp:DB" LIGHT DETECTED ",0
+03AE 48542044                
+03B2 45544543                
+03B6 54454420                
+03BA 00                      
+03BB 204F424A        296     object:  DB" OBJECT DETECTED",0
+A51 MACRO ASSEMBLER  ANDRIOD                                                              12/11/2014 15:24:34 PAGE     8
+
+03BF 45435420                
+03C3 44455445                
+03C7 43544544                
+03CB 00                      
+                     297     
+                     298     
+                     299     
+03CC                 300     LCD_Init:
+03CC 7430            301             mov  a,#30h
+03CE 71E1            302             call LCD_CMND_OUT
+                     303             
+03D0 7438            304             mov  a,#38h
+03D2 71E1            305             call LCD_CMND_OUT
+                     306             
+03D4 7406            307             mov  a,#06h
+03D6 71E1            308             call LCD_CMND_OUT
+                     309             
+03D8 740C            310             mov  a,#0Ch
+03DA 71E1            311             call LCD_CMND_OUT
+                     312             
+03DC 7401            313             mov  a,#01h
+03DE 71E1            314             call LCD_CMND_OUT
+                     315             
+03E0 22              316     RET
+                     317     
+                     318     
+                     319     
+03E1                 320     LCD_CMND_OUT:
+03E1 71FF            321             call lcd_busy
+03E3 F580            322             mov  LCD_DPort,a
+03E5 C295            323             clr  LCD_Rs
+03E7 C296            324             clr  LCD_Rw
+03E9 D297            325             setb LCD_En
+03EB 00              326             nop
+03EC 00              327             nop
+03ED C297            328             clr  LCD_En
+03EF 22              329     RET
+                     330     
+                     331     
+                     332     
+03F0                 333     LCD_DATA_OUT:
+03F0 71FF            334             call lcd_busy
+03F2 F580            335             mov  LCD_DPort,a
+03F4 D295            336             setb LCD_Rs
+03F6 C296            337             clr  LCD_Rw
+03F8 D297            338             setb LCD_En
+03FA 00              339             nop
+03FB 00              340             nop
+03FC C297            341             clr  LCD_En
+03FE 22              342             RET
+                     343     
+                     344     
+                     345     
+03FF                 346     lcd_busy:
+03FF 7580FF          347             mov  LCD_DPort,#0ffh
+0402 C295            348             CLR  LCD_Rs
+0404 D296            349             SETB LCD_Rw
+0406                 350     AGAIN1: 
+0406 C297            351             CLR  LCD_EN
+0408 00              352             NOP
+0409 00              353             NOP
+040A D297            354             SETB LCD_EN
+040C 2087F7          355             JB p0.7,AGAIN1
+040F 22              356             RET     
+                     357     
+                     358     
+A51 MACRO ASSEMBLER  ANDRIOD                                                              12/11/2014 15:24:34 PAGE     9
+
+                     359     
+0410                 360     DISPDATA:
+0410                 361     Next_Char:
+0410 E4              362             clr  a
+0411 93              363             movc a,@a+dptr
+0412 6005            364             jz   End_Str
+0414 71F0            365             call LCD_DATA_OUT
+0416 A3              366             inc  dptr
+0417 80F7            367             jmp  Next_char
+0419                 368     End_Str:
+0419 22              369             RET
+                     370     
+                     371     
+                     372     
+041A                 373     lcdclear:
+041A 7401            374             mov  a,#01h
+041C 71E1            375             call LCD_CMND_OUT
+041E 22              376     ret
+041F                 377     displine1:
+041F 7480            378             mov  a,#80h
+0421 71E1            379             call LCD_CMND_OUT
+0423 22              380     ret
+0424                 381     displine2:
+0424 74C0            382             mov  a,#0c0h
+0426 71E1            383             call LCD_CMND_OUT
+0428 22              384     ret
+0429                 385     displine1A:
+0429 748A            386             mov  a,#8Ah
+042B 71E1            387             call LCD_CMND_OUT
+042D 22              388     ret
+                     389     
+042E                 390     delay1sec:
+042E 75300A          391             mov  DELAY1,#10         
+0431 7531C8          392     wait2:  mov  DELAY2,#200 
+0434 7532FA          393     wait1:  mov  DELAY3,#250
+0437 D532FD          394     wait:   djnz DELAY3,wait
+043A D531F7          395             djnz DELAY2,wait1
+043D D530F1          396             djnz DELAY1,wait2
+0440 22              397             ret
+0441                 398     delay500ms:
+                     399             
+0441 7531B7          400                     mov  DELAY2,#183
+0444 7532FA          401     wait12: mov  DELAY3,#250
+0447 D532FD          402     wait0:  djnz DELAY3,wait0
+044A D531F7          403             djnz DELAY2,wait12
+044D 22              404             ret     
+044E                 405     delay20ms:
+                     406                             
+044E 753128          407     wait32: mov  DELAY2,#40 
+0451 7532FA          408     wait31: mov  DELAY3,#250
+0454 D532FD          409     wait3:  djnz DELAY3,wait3
+0457 D531F7          410             djnz DELAY2,wait31
+                     411             
+045A 22              412             ret
+                     413     
+045B                 414     delay:
+045B 753000          415             mov  DELAY1,#0  
+045E D530FD          416     same:   djnz DELAY1,same
+0461 22              417             ret
+                     418     
+                     419     
+                     420     end
+A51 MACRO ASSEMBLER  ANDRIOD                                                              12/11/2014 15:24:34 PAGE    10
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+AGAIN1 . . . . . .  C ADDR   0406H   A   
+BACKLP . . . . . .  C ADDR   006FH   A   
+BTINIT . . . . . .  C ADDR   00D9H   A   
+BWD. . . . . . . .  C ADDR   036DH   A   
+DELAY. . . . . . .  C ADDR   045BH   A   
+DELAY1 . . . . . .  D ADDR   0030H   A   
+DELAY1SEC. . . . .  C ADDR   042EH   A   
+DELAY2 . . . . . .  D ADDR   0031H   A   
+DELAY20MS. . . . .  C ADDR   044EH   A   
+DELAY3 . . . . . .  D ADDR   0032H   A   
+DELAY500MS . . . .  C ADDR   0441H   A   
+DISPDATA . . . . .  C ADDR   0410H   A   
+DISPLINE1. . . . .  C ADDR   041FH   A   
+DISPLINE1A . . . .  C ADDR   0429H   A   
+DISPLINE2. . . . .  C ADDR   0424H   A   
+END_ISR. . . . . .  C ADDR   0330H   A   
+END_STR. . . . . .  C ADDR   0419H   A   
+EXIT . . . . . . .  C ADDR   0315H   A   
+EXIT1. . . . . . .  C ADDR   00D7H   A   
+FDISPRFID. . . . .  B ADDR   0020H.1 A   
+FIERDISP . . . . .  C ADDR   0399H   A   
+FIRE . . . . . . .  C ADDR   02A8H   A   
+FIRESEN. . . . . .  C ADDR   0024H   A   
+FWD. . . . . . . .  C ADDR   0362H   A   
+IE . . . . . . . .  D ADDR   00A8H   A   
+LCDCLEAR . . . . .  C ADDR   041AH   A   
+LCD_BUSY . . . . .  C ADDR   03FFH   A   
+LCD_CMND_OUT . . .  C ADDR   03E1H   A   
+LCD_DATA_OUT . . .  C ADDR   03F0H   A   
+LCD_DPORT. . . . .  D ADDR   0080H   A   
+LCD_EN . . . . . .  B ADDR   0090H.7 A   
+LCD_INIT . . . . .  C ADDR   03CCH   A   
+LCD_RS . . . . . .  B ADDR   0090H.5 A   
+LCD_RW . . . . . .  B ADDR   0090H.6 A   
+LEFTLP . . . . . .  C ADDR   00A3H   A   
+LFT. . . . . . . .  C ADDR   0378H   A   
+LIGHTSEN . . . . .  C ADDR   003DH   A   
+LITE . . . . . . .  C ADDR   0277H   A   
+LITEDISP . . . . .  C ADDR   03AAH   A   
+LOOOP. . . . . . .  C ADDR   030AH   A   
+MAINLOOP . . . . .  C ADDR   001DH   A   
+MYCMND0. . . . . .  C ADDR   00EFH   A   
+MYCMND1. . . . . .  C ADDR   0120H   A   
+MYCMND2. . . . . .  C ADDR   0151H   A   
+MYDATA . . . . . .  C ADDR   0342H   A   
+MYDATA1. . . . . .  C ADDR   0351H   A   
+NEXT_CHAR. . . . .  C ADDR   0410H   A   
+OBJ. . . . . . . .  C ADDR   02D9H   A   
+OBJECT . . . . . .  C ADDR   03BBH   A   
+P0 . . . . . . . .  D ADDR   0080H   A   
+P1 . . . . . . . .  D ADDR   0090H   A   
+P2 . . . . . . . .  D ADDR   00A0H   A   
+RFIDLOOP . . . . .  C ADDR   0053H   A   
+RI . . . . . . . .  B ADDR   0098H.0 A   
+RIGHTLP. . . . . .  C ADDR   0089H   A   
+ROBOBWD. . . . . .  C ADDR   01B3H   A   
+ROBOFWD. . . . . .  C ADDR   0182H   A   
+ROBOLFT. . . . . .  C ADDR   01E4H   A   
+ROBORT . . . . . .  C ADDR   0215H   A   
+ROBOST . . . . . .  C ADDR   0246H   A   
+A51 MACRO ASSEMBLER  ANDRIOD                                                              12/11/2014 15:24:34 PAGE    11
+
+RT . . . . . . . .  C ADDR   0383H   A   
+RX_SERVICE . . . .  C ADDR   031DH   A   
+SAME . . . . . . .  C ADDR   045EH   A   
+SBUF . . . . . . .  D ADDR   0099H   A   
+SCON . . . . . . .  D ADDR   0098H   A   
+SERIALSEND . . . .  C ADDR   030AH   A   
+SERIAL_ISR . . . .  C ADDR   0316H   A   
+ST . . . . . . . .  C ADDR   038EH   A   
+STOP . . . . . . .  C ADDR   00BDH   A   
+TH1. . . . . . . .  D ADDR   008DH   A   
+TI . . . . . . . .  B ADDR   0098H.1 A   
+TMOD . . . . . . .  D ADDR   0089H   A   
+TR1. . . . . . . .  B ADDR   0088H.6 A   
+TX_SERVICE . . . .  C ADDR   032BH   A   
+VSTACK . . . . . .  D ADDR   0061H   A   
+WAIT . . . . . . .  C ADDR   0437H   A   
+WAIT0. . . . . . .  C ADDR   0447H   A   
+WAIT1. . . . . . .  C ADDR   0434H   A   
+WAIT12 . . . . . .  C ADDR   0444H   A   
+WAIT2. . . . . . .  C ADDR   0431H   A   
+WAIT3. . . . . . .  C ADDR   0454H   A   
+WAIT31 . . . . . .  C ADDR   0451H   A   
+WAIT32 . . . . . .  C ADDR   044EH   A   
+WELCOMEDATA. . . .  C ADDR   0331H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)

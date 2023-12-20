@@ -1,0 +1,222 @@
+A51 MACRO ASSEMBLER  RFID4GSMGPS                                                          12/11/2014 11:02:45 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.00d
+OBJECT MODULE PLACED IN rfid4gsmgps.OBJ
+ASSEMBLER INVOKED BY: C:\Keil\C51\BIN\A51.EXE rfid4gsmgps.asm SET(SMALL) DEBUG EP
+
+LOC  OBJ            LINE     SOURCE
+
+                       1                                                                                         
+                       2       
+                       3      
+                       4     
+                       5     
+  0080                 6             LCD_DPort EQU P0
+                       7     
+  0095                 8             LCD_Rs    EQU  P1.5
+  0096                 9             LCD_Rw    EQU  P1.6
+  0097                10             LCD_En    EQU  P1.7
+                      11     
+  0030                12             DELAY1    DATA 30h
+  0031                13             DELAY2    DATA 31h                                       
+  0032                14             DELAY3    DATA 32h
+                      15     
+                      16     
+  0001                17             FDispRFID Bit 01h
+                      18     
+                      19     
+0000                  20             org  00h        
+0000 020100           21             ljmp Power_on
+                      22     
+0023                  23             org  23h
+0023 020189           24             ljmp serial_ISR
+                      25             
+0100                  26             org  100h
+0100                  27     Power_on:
+0100 758920           28             mov  TMOD,#20h
+0103 758DFD           29             mov  TH1,#0FDh
+0106 758BFD           30             mov  TL1,#0FDh
+0109 759850           31             mov  SCON,#50h
+010C 75A890           32             mov  IE,#90h
+010F D28E             33             setb TR1
+                      34     
+                      35     
+                      36     
+0111 7870             37             mov   R0,#70h
+0113 7A0A             38             mov   R2,#10
+0115 7B00             39             mov   R3,#00h
+0117 75A0FF           40             mov   P2,#0ffh
+011A D2AF             41             setb  EA        
+                      42     
+011C                  43     MainLoop:
+011C 200102           44             jb FDispRFID,RFIDLoop
+011F 80FB             45             jmp MainLoop
+                      46     
+0121 020124           47     RFIDLoop:               Ljmp RFIDDATA
+                      48     
+0124                  49     RFIDDATA: 
+0124 C201             50             clr FDispRFID
+                      51     
+0126 7870             52             mov R0,#70h
+0128 7A0A             53             mov R2,#10
+                      54     
+012A 900162           55             mov dptr,#CARDNUM0
+012D 3176             56             call Compare
+012F BB0110           57             cjne R3,#01h,Check_CARD1
+0132 75A0FF           58             mov  P2,#0ffh
+A51 MACRO ASSEMBLER  RFID4GSMGPS                                                          12/11/2014 11:02:45 PAGE     2
+
+0135 31B5             59             call delay1sec
+0137 75A000           60             mov  P2,#00h
+                      61     
+013A 7870             62             mov R0,#70h
+013C 7A0A             63             mov R2,#10
+013E 7B00             64             mov R3,#00h
+0140 80DA             65             jmp MainLoop
+                      66     
+0142                  67     Check_CARD1:
+0142 90016C           68             mov dptr,#CARDNUM1
+0145 3176             69             call Compare
+0147 BB0110           70             cjne R3,#01h,Check_Invalid
+014A 75A0FF           71             mov  P2,#0ffh
+014D 31B5             72             call delay1sec
+014F 75A000           73             mov  P2,#00h
+0152 7870             74             mov R0,#70h
+0154 7A0A             75             mov R2,#10
+0156 7B00             76             mov R3,#00h
+0158 80C2             77             jmp MainLoop
+                      78     
+015A                  79     Check_Invalid:
+015A 7870             80             mov R0,#70h
+015C 7A0A             81             mov R2,#10
+015E 7B00             82             mov R3,#00h
+0160 80BA             83             jmp MainLoop
+                      84     
+                      85             
+0162 38343030         86     CARDNUM0:    DB "8400816353"
+0166 38313633                
+016A 3533                    
+016C 38343030         87     CARDNUM1:    DB "8400857EE7"
+0170 38353745                
+0174 4537                    
+                      88     
+0176                  89     Compare:
+0176                  90     Card1_ChK:
+0176 E4               91             clr a
+0177 93               92             movc a,@a+dptr
+0178 F5F0             93             mov b,a
+017A E6               94             mov a,@R0
+017B B5F006           95             cjne a,b,Next_ChK
+017E 08               96             inc R0
+017F A3               97             inc dptr
+0180 DAF4             98             djnz R2,Card1_ChK
+0182 0B               99             inc R3
+0183 22              100             ret
+0184                 101     Next_ChK:
+0184 7870            102             mov R0,#70h
+0186 7A0A            103             mov R2,#10
+0188 22              104             ret
+                     105     
+0189                 106     serial_ISR:
+0189 C0E0            107             push Acc
+018B C083            108             push DPH
+018D C082            109             push DPL
+018F 20980A          110             jb   RI,RX_Service
+0192 209914          111             jb   TI,TX_Service
+0195 D082            112             pop  DPL        
+0197 D083            113             pop  DPH
+0199 D0E0            114             pop  Acc
+019B 32              115             reti
+                     116     
+019C                 117     RX_Service:
+019C C298            118             clr  RI 
+019E E599            119             mov  a,sbuf
+01A0 F6              120             mov @R0,a
+A51 MACRO ASSEMBLER  RFID4GSMGPS                                                          12/11/2014 11:02:45 PAGE     3
+
+01A1 08              121             inc  R0
+01A2 DA0A            122             djnz R2,End_isr
+01A4 D201            123             setb FDispRFID
+01A6 0201AE          124             ljmp End_isr
+01A9                 125     TX_Service:
+01A9 C299            126             clr  TI
+01AB 0201AE          127             ljmp End_isr
+                     128     
+01AE                 129     End_isr:
+01AE D082            130             pop  DPL        
+01B0 D083            131             pop  DPH
+01B2 D0E0            132             pop  Acc
+01B4 32              133             reti
+                     134                     
+                     135     
+                     136     
+01B5                 137     delay1sec:
+01B5 75300A          138             mov  DELAY1,#10         
+01B8 7531C8          139     wait2:  mov  DELAY2,#200 
+01BB 7532FA          140     wait1:  mov  DELAY3,#250
+01BE D532FD          141     wait:   djnz DELAY3,wait
+01C1 D531F7          142             djnz DELAY2,wait1
+01C4 D530F1          143             djnz DELAY1,wait2
+01C7 22              144             ret
+                     145     
+                     146     
+                     147     end
+A51 MACRO ASSEMBLER  RFID4GSMGPS                                                          12/11/2014 11:02:45 PAGE     4
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+ACC. . . . . . . .  D ADDR   00E0H   A   
+B. . . . . . . . .  D ADDR   00F0H   A   
+CARD1_CHK. . . . .  C ADDR   0176H   A   
+CARDNUM0 . . . . .  C ADDR   0162H   A   
+CARDNUM1 . . . . .  C ADDR   016CH   A   
+CHECK_CARD1. . . .  C ADDR   0142H   A   
+CHECK_INVALID. . .  C ADDR   015AH   A   
+COMPARE. . . . . .  C ADDR   0176H   A   
+DELAY1 . . . . . .  D ADDR   0030H   A   
+DELAY1SEC. . . . .  C ADDR   01B5H   A   
+DELAY2 . . . . . .  D ADDR   0031H   A   
+DELAY3 . . . . . .  D ADDR   0032H   A   
+DPH. . . . . . . .  D ADDR   0083H   A   
+DPL. . . . . . . .  D ADDR   0082H   A   
+EA . . . . . . . .  B ADDR   00A8H.7 A   
+END_ISR. . . . . .  C ADDR   01AEH   A   
+FDISPRFID. . . . .  B ADDR   0020H.1 A   
+IE . . . . . . . .  D ADDR   00A8H   A   
+LCD_DPORT. . . . .  D ADDR   0080H   A   
+LCD_EN . . . . . .  B ADDR   0090H.7 A   
+LCD_RS . . . . . .  B ADDR   0090H.5 A   
+LCD_RW . . . . . .  B ADDR   0090H.6 A   
+MAINLOOP . . . . .  C ADDR   011CH   A   
+NEXT_CHK . . . . .  C ADDR   0184H   A   
+P0 . . . . . . . .  D ADDR   0080H   A   
+P1 . . . . . . . .  D ADDR   0090H   A   
+P2 . . . . . . . .  D ADDR   00A0H   A   
+POWER_ON . . . . .  C ADDR   0100H   A   
+RFIDDATA . . . . .  C ADDR   0124H   A   
+RFIDLOOP . . . . .  C ADDR   0121H   A   
+RI . . . . . . . .  B ADDR   0098H.0 A   
+RX_SERVICE . . . .  C ADDR   019CH   A   
+SBUF . . . . . . .  D ADDR   0099H   A   
+SCON . . . . . . .  D ADDR   0098H   A   
+SERIAL_ISR . . . .  C ADDR   0189H   A   
+TH1. . . . . . . .  D ADDR   008DH   A   
+TI . . . . . . . .  B ADDR   0098H.1 A   
+TL1. . . . . . . .  D ADDR   008BH   A   
+TMOD . . . . . . .  D ADDR   0089H   A   
+TR1. . . . . . . .  B ADDR   0088H.6 A   
+TX_SERVICE . . . .  C ADDR   01A9H   A   
+WAIT . . . . . . .  C ADDR   01BEH   A   
+WAIT1. . . . . . .  C ADDR   01BBH   A   
+WAIT2. . . . . . .  C ADDR   01B8H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)

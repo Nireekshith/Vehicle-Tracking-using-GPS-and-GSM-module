@@ -1,0 +1,18 @@
+<html>
+<body>
+<pre>
+<h1>µVision3 Build Log</h1>
+<h2>Project:</h2>
+D:\2014 D DRIVE\2014 D DRIVE\8051 codes c and asm\RecentDevelop\26.vechile traking using gsm-gps\26.vechile traking using gsm-gps\vechile traking system.uv2
+Project File Date:  12/11/2014
+
+<h2>Output:</h2>
+Build target 'Target 1'
+assembling andriod.asm...
+linking...
+Program Size: data=8.0 xdata=0 code=1122
+creating hex file from "vechile traking system"...
+"vechile traking system" - 0 Error(s), 0 Warning(s).
+</pre>
+</body>
+</html>

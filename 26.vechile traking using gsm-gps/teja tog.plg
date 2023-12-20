@@ -1,0 +1,75 @@
+<html>
+<body>
+<pre>
+<h1>µVision3 Build Log</h1>
+<h2>Project:</h2>
+D:\2014 D DRIVE\2014 D DRIVE\8051 codes c and asm\RecentDevelop\26.vechile traking using gsm-gps\26.vechile traking using gsm-gps\teja tog.uv2
+Project File Date:  01/14/2015
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(2): error C202: 'p1': undefined identifier
+TEJATOG.C(3): error C129: missing ';' before 'main'
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(3): error C129: missing ';' before 'main'
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(3): error C129: missing ';' before 'main'
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(3): error C129: missing ';' before 'main'
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(3): error C129: missing ';' before 'main'
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(3): error C129: missing ';' before 'main'
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(3): error C141: syntax error near 'vid', expected ';'
+TEJATOG.C(3): error C129: missing ';' before 'main'
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(3): error C129: missing ';' before 'main'
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(4): error C129: missing ';' before 'id'
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+linking...
+Program Size: data=9.0 xdata=0 code=70
+"teja tog" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(6): error C202: 'led': undefined identifier
+TEJATOG.C(11): error C141: syntax error near ''
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(11): error C141: syntax error near ''
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+TEJATOG.C(10): error C141: syntax error near ''
+Target not created
+Build target 'Target 1'
+compiling tejatog.c...
+linking...
+Program Size: data=9.0 xdata=0 code=26
+"teja tog" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling tejatog.c...
+linking...
+Program Size: data=9.0 xdata=0 code=26
+"teja tog" - 0 Error(s), 0 Warning(s).

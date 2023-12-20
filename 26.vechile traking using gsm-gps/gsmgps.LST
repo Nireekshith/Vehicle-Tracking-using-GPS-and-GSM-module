@@ -1,0 +1,625 @@
+C51 COMPILER V8.01   GSMGPS                                                                02/25/2013 14:45:24 PAGE 1   
+
+
+C51 COMPILER V8.01, COMPILATION OF MODULE GSMGPS
+OBJECT MODULE PLACED IN gsmgps.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE gsmgps.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg52.h>
+   2          #define lcd_data P0
+   3          #include<string.h>
+   4          
+   5          void lcd_init(void);    
+   6          void lcdcmd(unsigned char value);
+   7          void lcddata(unsigned char value);
+   8          void msgdisplay(unsigned char b[]);
+   9          void delay(unsigned int value);
+  10          unsigned char keypad();                            
+  11          void uart(void);
+  12          void gsm_init(void);
+  13          void modem_send(unsigned char *);
+  14          void enter(void);
+  15          void Readmessage(void);
+  16          void sendbyte(unsigned char *);
+  17          void sendslot(unsigned char);
+  18          unsigned char dat[10];
+  19          unsigned char number[15];               
+  20          unsigned char interruptno[13];
+  21          unsigned char LT[13];
+  22          unsigned char LG[13];
+  23          unsigned char SlotNo;
+  24          void gps(void);
+  25          sbit rl=P2^7;
+  26          bit MsgRead;
+  27          void comp(void);
+  28          
+  29          void send_sms(unsigned char *cmd1,unsigned char *cmd2,unsigned char *ch);
+  30          void send_sms1(unsigned char *cmd1,unsigned char *cmd2,unsigned char *ch1,unsigned char *ch2);
+  31          bit flag;
+  32          
+  33          ////////////////////////////////////////////////////////////////////////////////////////////////////
+  34          void main()
+  35          {
+  36   1      
+  37   1      SCON = 0x50;
+  38   1      TMOD = 0x20;
+  39   1      TH1 = -3;///////////////GSM 9600
+  40   1      TR1 = 1;
+  41   1      
+  42   1              
+  43   1      rl=0; 
+  44   1      lcd_init();  lcd_init();  lcd_init();
+  45   1      lcdcmd(0x01);
+  46   1      lcdcmd(0x80);
+  47   1      msgdisplay("VEHICLE TRACKING"); 
+  48   1      delay(100);
+  49   1      lcdcmd(0xC0);
+  50   1      msgdisplay("USING GSM & GPS"); 
+  51   1      delay(200);
+  52   1      delay(200);delay(200);delay(200);delay(200);
+  53   1      rl=0;
+  54   1      gsm_init();
+  55   1      EA=1;
+C51 COMPILER V8.01   GSMGPS                                                                02/25/2013 14:45:24 PAGE 2   
+
+  56   1      ES=1;
+  57   1      MsgRead=0;
+  58   1      while(1)        
+  59   1      {
+  60   2      TH1=-3;
+  61   2      rl=0;
+  62   2      if(MsgRead)
+  63   2      {
+  64   3      EA=0;
+  65   3      Readmessage();
+  66   3      MsgRead=0;
+  67   3      EA=1;
+  68   3      ES=1;
+  69   3      }
+  70   2      }
+  71   1      }
+  72          //////////////////////////////////////////////////////////////////
+  73          void serialintr(void) interrupt 4
+  74          {
+  75   1      unsigned char i;
+  76   1      if(SBUF == '+')
+  77   1      {
+  78   2      EA=0;
+  79   2      ES=0;
+  80   2      RI=0;
+  81   2      for(i=0;i<11;i++)
+  82   2      {
+  83   3      while(!RI);
+  84   3      interruptno[i]=SBUF;
+  85   3      RI=0;
+  86   3      }
+  87   2      while(!RI);
+  88   2      SlotNo=SBUF;
+  89   2      RI=0;
+  90   2      MsgRead=1;
+  91   2      }
+  92   1      RI=0;
+  93   1      }
+  94          ////////////////////////////////////////////////////////////////
+  95          void gsm_init(void)
+  96          {
+  97   1      rl=0;
+  98   1      modem_send("AT");
+  99   1      lcdcmd(0x01);lcdcmd(0x80);
+ 100   1      msgdisplay("AT");
+ 101   1      modem_send("ATE0");
+ 102   1      lcdcmd(0x01);lcdcmd(0x80);
+ 103   1      msgdisplay("ATE0");
+ 104   1      modem_send("AT+CSMS=0");
+ 105   1      lcdcmd(0x01);lcdcmd(0x80);
+ 106   1      msgdisplay("AT+CSMS=0");
+ 107   1      modem_send("AT+IPR=9600");
+ 108   1      lcdcmd(0x01);lcdcmd(0x80);
+ 109   1      msgdisplay("AT+IPR=9600");
+ 110   1      modem_send("AT+CMGF=1");
+ 111   1      lcdcmd(0x01);lcdcmd(0x80);
+ 112   1      msgdisplay("AT+CMGF=1");                
+ 113   1      modem_send("AT&W");
+ 114   1      lcdcmd(0x01);lcdcmd(0x80);
+ 115   1      msgdisplay("AT&W");
+ 116   1      modem_send("AT+CNMI=2,1,0,0,0");
+ 117   1      lcdcmd(0x01);lcdcmd(0x80);
+C51 COMPILER V8.01   GSMGPS                                                                02/25/2013 14:45:24 PAGE 3   
+
+ 118   1      msgdisplay("AT+CNMI=2,1,0,0,0");
+ 119   1      lcdcmd(0x01);lcdcmd(0x80);
+ 120   1      modem_send("AT+CMGD=1");modem_send("AT+CMGD=2");modem_send("AT+CMGD=3");modem_send("AT+CMGD=4");
+ 121   1      delay(200);delay(200);
+ 122   1      lcdcmd(0x01);lcdcmd(0x80);
+ 123   1      msgdisplay("GSM Initialized");
+ 124   1      delay(200);delay(200);
+ 125   1      lcdcmd(0x01);lcdcmd(0x80);
+ 126   1      msgdisplay("WATING FOR SMS");
+ 127   1      delay(200);delay(200);
+ 128   1      }
+ 129          //////////////////////////////////////////////////////////////////////////
+ 130          void modem_send(unsigned char *ch)                              
+ 131          {
+ 132   1      unsigned char cha;
+ 133   1      while(*ch)
+ 134   1      {
+ 135   2      SBUF = *ch;
+ 136   2      while(TI == 0);
+ 137   2      TI = 0;
+ 138   2      ch++;
+ 139   2      }       
+ 140   1      enter();
+ 141   1      TI = 0;
+ 142   1      RI = 0;
+ 143   1      while(1)
+ 144   1      {
+ 145   2      while(RI == 0);
+ 146   2      RI = 0;
+ 147   2      cha = SBUF;
+ 148   2      if(cha == 'O');
+ 149   2      while(RI == 0);
+ 150   2      RI = 0;
+ 151   2      cha = SBUF;
+ 152   2      if(cha == 'K')          
+ 153   2      break;
+ 154   2      SBUF = 'A';
+ 155   2      while(TI == 0);
+ 156   2      TI = 0;
+ 157   2      SBUF = '/';
+ 158   2      while(TI == 0);
+ 159   2      TI = 0;
+ 160   2      }
+ 161   1      TI = 0;
+ 162   1      RI = 0;
+ 163   1      }
+ 164          //////////////////////////////////////////////////////////////////////////
+ 165          void enter(void)
+ 166          {
+ 167   1      SBUF = 0x0a;
+ 168   1      while(TI == 0);
+ 169   1      TI = 0;
+ 170   1      SBUF = 0x0d;
+ 171   1      while(TI == 0);
+ 172   1      TI = 0;
+ 173   1      }
+ 174          ////////////////////////////////////////////////////////////////////////
+ 175          void sendbyte(unsigned char *str)
+ 176          {
+ 177   1      EA=0;
+ 178   1      while(*str!='\0')
+ 179   1      {
+C51 COMPILER V8.01   GSMGPS                                                                02/25/2013 14:45:24 PAGE 4   
+
+ 180   2      TI=0;
+ 181   2      SBUF=(*str++);
+ 182   2      while(!TI);
+ 183   2      TI=0;
+ 184   2      }
+ 185   1      }
+ 186          //////////////////////////////////////////////////////////////////
+ 187          void sendslot(unsigned char slot)
+ 188          {
+ 189   1      EA=0;
+ 190   1      TI=0;
+ 191   1      SBUF=slot;
+ 192   1      while(!TI);
+ 193   1      TI=0;
+ 194   1      }
+ 195          //////////////////////////////////////////////////////////////
+ 196          void Readmessage(void) 
+ 197          {
+ 198   1      unsigned char *no;
+ 199   1      unsigned char i,cha='X';
+ 200   1      *no=SlotNo;
+ 201   1      lcdcmd(0x01);lcdcmd(0x80);
+ 202   1      delay(200);delay(200);
+ 203   1      msgdisplay("Message Received");
+ 204   1      delay(200);delay(200);delay(200);delay(200);
+ 205   1      lcdcmd(0x01);lcdcmd(0x80);
+ 206   1      msgdisplay("Slot No:");
+ 207   1      msgdisplay(no);
+ 208   1      delay(200);delay(200);delay(200);delay(200);delay(200);delay(200);
+ 209   1      lcdcmd(0x01);
+ 210   1      lcdcmd(0x80);
+ 211   1      msgdisplay("Message Reading");
+ 212   1      delay(200);delay(200);delay(200);delay(200);delay(200);delay(200);
+ 213   1      sendbyte("AT+CMGR=");
+ 214   1      sendslot(SlotNo);
+ 215   1      enter();
+ 216   1      while(SBUF!=':')
+ 217   1      {
+ 218   2      while(!RI);
+ 219   2      RI=0;
+ 220   2      }
+ 221   1      while(SBUF!=',')
+ 222   1      {
+ 223   2      while(!RI);
+ 224   2      RI=0;
+ 225   2      }       
+ 226   1      while(SBUF!=',')
+ 227   1      {
+ 228   2      while(!RI);
+ 229   2      RI=0;
+ 230   2      }
+ 231   1      for(i=0;i<4;i++)
+ 232   1      {
+ 233   2      while(!RI);
+ 234   2      RI=0;
+ 235   2      }
+ 236   1      for(i=0;i<10;i++)
+ 237   1      {
+ 238   2      while(!RI);
+ 239   2      number[i] = SBUF;
+ 240   2      RI=0;
+ 241   2      }
+C51 COMPILER V8.01   GSMGPS                                                                02/25/2013 14:45:24 PAGE 5   
+
+ 242   1      number[i]='\0';
+ 243   1      while(SBUF!='+')
+ 244   1      {
+ 245   2      while(!RI);
+ 246   2      RI=0;
+ 247   2      }
+ 248   1      for(i=0;i<5;i++)
+ 249   1      {
+ 250   2      while(!RI);
+ 251   2      RI=0;
+ 252   2      }
+ 253   1      for(i=0;i<5;i++)
+ 254   1      {
+ 255   2      while(!RI);
+ 256   2      dat[i]=SBUF;
+ 257   2      RI=0;
+ 258   2      }
+ 259   1      dat[i] = '\0';
+ 260   1      while(1)
+ 261   1      {
+ 262   2      while(RI == 0);
+ 263   2      cha = SBUF;
+ 264   2      RI = 0;
+ 265   2      if(cha == 'O');
+ 266   2      while(RI == 0);
+ 267   2      cha = SBUF;
+ 268   2      RI = 0;
+ 269   2      if(cha=='K')
+ 270   2      break;
+ 271   2      }       
+ 272   1      lcdcmd(0x01);lcdcmd(0x80);
+ 273   1      msgdisplay("Message Showing");
+ 274   1      delay(200);delay(200);delay(200);delay(200);delay(200);delay(200);
+ 275   1      lcdcmd(0x01);
+ 276   1      lcdcmd(0x80);
+ 277   1      msgdisplay(number);
+ 278   1      delay(200);delay(200);delay(200);delay(200);
+ 279   1      lcdcmd(0x01);
+ 280   1      lcdcmd(0x80);
+ 281   1      msgdisplay(dat);
+ 282   1      delay(200);delay(200);delay(200);delay(200);delay(200);delay(200);
+ 283   1      comp();
+ 284   1      }
+ 285          //////////////////////////////////////////////////////////////////////////////////////////////
+ 286          void send_sms1(unsigned char *cmd1,unsigned char *cmd2,unsigned char *ch1,unsigned char *ch2)                           
+ 287          {
+ 288   1      unsigned char cha='X',P;
+ 289   1      while(*cmd1)
+ 290   1      {
+ 291   2      RI=0;                   
+ 292   2      TI=0;
+ 293   2      SBUF=*cmd1;
+ 294   2      while(TI==0);
+ 295   2      TI=0;
+ 296   2      RI=0;
+ 297   2      cmd1++;
+ 298   2      }
+ 299   1      for(P=0;P<10;P++)
+ 300   1      {
+ 301   2      RI=0;
+ 302   2      TI=0;
+ 303   2      SBUF=number[P];
+C51 COMPILER V8.01   GSMGPS                                                                02/25/2013 14:45:24 PAGE 6   
+
+ 304   2      while(TI==0);
+ 305   2      TI=0;
+ 306   2      RI=0;
+ 307   2      }
+ 308   1      sendbyte(cmd2);
+ 309   1      enter();
+ 310   1      while(cha!='>')
+ 311   1      {
+ 312   2      while(RI==0);
+ 313   2      cha=SBUF;
+ 314   2      RI=0;
+ 315   2      }
+ 316   1      RI=0;
+ 317   1      TI=0;
+ 318   1      enter();
+ 319   1      SBUF='"';while(TI==0);TI=0;
+ 320   1      SBUF='S';while(TI==0);TI=0;
+ 321   1      SBUF='R';while(TI==0);TI=0;
+ 322   1      SBUF='E';while(TI==0);TI=0;
+ 323   1      SBUF='C';while(TI==0);TI=0;
+ 324   1      SBUF='"';while(TI==0);TI=0;
+ 325   1      SBUF=' ';while(TI==0);TI=0;
+ 326   1      SBUF='V';while(TI==0);TI=0;
+ 327   1      SBUF='E';while(TI==0);TI=0;
+ 328   1      SBUF='H';while(TI==0);TI=0;
+ 329   1      SBUF='I';while(TI==0);TI=0;
+ 330   1      SBUF='C';while(TI==0);TI=0;
+ 331   1      SBUF='L';while(TI==0);TI=0;
+ 332   1      SBUF='E';while(TI==0);TI=0;
+ 333   1      
+ 334   1      SBUF=' ';while(TI==0);TI=0;
+ 335   1      SBUF=' ';while(TI==0);TI=0;
+ 336   1      SBUF='P';while(TI==0);TI=0;
+ 337   1      SBUF='O';while(TI==0);TI=0;
+ 338   1      SBUF='S';while(TI==0);TI=0;
+ 339   1      SBUF='I';while(TI==0);TI=0;
+ 340   1      SBUF='T';while(TI==0);TI=0;
+ 341   1      SBUF='I';while(TI==0);TI=0;
+ 342   1      SBUF='O';while(TI==0);TI=0;
+ 343   1      SBUF='N';while(TI==0);TI=0;
+ 344   1      SBUF=' ';while(TI==0);TI=0;
+ 345   1      SBUF=' ';while(TI==0);TI=0;
+ 346   1      SBUF='A';while(TI==0);TI=0;
+ 347   1      SBUF='T';while(TI==0);TI=0;
+ 348   1      enter();
+ 349   1      ////////////////////////////////////////////////////////////////////////////
+ 350   1      SBUF='#';
+ 351   1      while(TI==0);
+ 352   1      TI=0;
+ 353   1      SBUF='L';
+ 354   1      while(TI==0);
+ 355   1      TI=0;
+ 356   1      SBUF='A';
+ 357   1      while(TI==0);
+ 358   1      TI=0;
+ 359   1      SBUF='T';
+ 360   1      while(TI==0);
+ 361   1      TI=0;
+ 362   1      enter();
+ 363   1      ///////////////////////
+ 364   1      for(P=0;P<11;P++)
+ 365   1      {
+C51 COMPILER V8.01   GSMGPS                                                                02/25/2013 14:45:24 PAGE 7   
+
+ 366   2      RI=0;
+ 367   2      TI=0;
+ 368   2      SBUF=*ch1;
+ 369   2      while(TI==0);
+ 370   2      TI=0;
+ 371   2      RI=0;
+ 372   2      ch1++;
+ 373   2      }
+ 374   1      RI=0;
+ 375   1      TI=0;
+ 376   1      enter();
+ 377   1      ////////////////////////////////////////////////////////////
+ 378   1      SBUF='#';
+ 379   1      while(TI==0);
+ 380   1      TI=0;
+ 381   1      SBUF='L';
+ 382   1      while(TI==0);
+ 383   1      TI=0;
+ 384   1      SBUF='N';
+ 385   1      while(TI==0);
+ 386   1      TI=0;
+ 387   1      SBUF='G';
+ 388   1      while(TI==0);
+ 389   1      TI=0;
+ 390   1      enter();
+ 391   1      ////////////////////////
+ 392   1      for(P=0;P<12;P++)
+ 393   1      {
+ 394   2      RI=0;
+ 395   2      TI=0;
+ 396   2      SBUF=*ch2;
+ 397   2      while(TI==0);
+ 398   2      TI=0;
+ 399   2      RI=0;
+ 400   2      ch2++;
+ 401   2      }
+ 402   1      RI=0;
+ 403   1      TI=0;
+ 404   1      SBUF=0x1a;
+ 405   1      while(TI==0);
+ 406   1      TI=0;
+ 407   1      RI=0;
+ 408   1      }
+ 409          /////////////////////////////////////////////////////////////
+ 410          void comp(void)
+ 411          {
+ 412   1      if(!strcmp(dat,"TRACK"))
+ 413   1      {
+ 414   2      rl=1;
+ 415   2      lcdcmd(0x01);lcdcmd(0x80);
+ 416   2      msgdisplay("connecting to GPS");
+ 417   2      gps();
+ 418   2      }
+ 419   1      else
+ 420   1      {
+ 421   2      lcdcmd(0x01); lcdcmd(0x80);
+ 422   2      msgdisplay("Invalid command");
+ 423   2      delay(200);delay(200);delay(200);delay(200);
+ 424   2      delay(200);delay(200);
+ 425   2      lcdcmd(0x01);lcdcmd(0x80);
+ 426   2      msgdisplay("WATING FOR SMS");
+ 427   2      
+C51 COMPILER V8.01   GSMGPS                                                                02/25/2013 14:45:24 PAGE 8   
+
+ 428   2      }
+ 429   1      }
+ 430          /////////////////////////////////////////////////////////////////
+ 431          void gps(void)
+ 432          {
+ 433   1      unsigned char gp='\0',t;        
+ 434   1      rl=1;
+ 435   1      TH1=-3; //////////////GPS  4800
+ 436   1      while(gp!='$')
+ 437   1      {
+ 438   2      while(RI==0);
+ 439   2      gp=SBUF;
+ 440   2      RI=0;
+ 441   2      }
+ 442   1      gp='\0';
+ 443   1      while(gp!='G')
+ 444   1      {
+ 445   2      while(RI==0);
+ 446   2      gp=SBUF;
+ 447   2      RI=0;
+ 448   2      }
+ 449   1      gp='\0';
+ 450   1      while(gp!='P')
+ 451   1      {
+ 452   2      while(RI==0);
+ 453   2      gp=SBUF;
+ 454   2      RI=0;
+ 455   2      }
+ 456   1      gp='\0';
+ 457   1      while(gp!='R')
+ 458   1      {
+ 459   2      while(RI==0);
+ 460   2      gp=SBUF;
+ 461   2      RI=0;
+ 462   2      }
+ 463   1      gp='\0';
+ 464   1      while(gp!='M')
+ 465   1      {
+ 466   2      while(RI==0);
+ 467   2      gp=SBUF;
+ 468   2      RI=0;
+ 469   2      }
+ 470   1      gp='\0';
+ 471   1      while(gp!='C')
+ 472   1      {
+ 473   2      while(RI==0);
+ 474   2      gp=SBUF;
+ 475   2      RI=0;
+ 476   2      } 
+ 477   1      while(RI==0);
+ 478   1      RI=0;                           
+ 479   1      for(t=0;t<13;t++)
+ 480   1      {
+ 481   2      while(RI==0);
+ 482   2      RI=0;
+ 483   2      }
+ 484   1      for(t=0;t<11;t++)
+ 485   1      {
+ 486   2      while(RI==0);
+ 487   2      LT[t]=SBUF;
+ 488   2      RI=0;                           
+ 489   2      }
+C51 COMPILER V8.01   GSMGPS                                                                02/25/2013 14:45:24 PAGE 9   
+
+ 490   1      LT[t]='\0';
+ 491   1      while(RI==0);
+ 492   1      RI=0;
+ 493   1      for(t=0;t<12;t++)
+ 494   1      {
+ 495   2      while(RI==0);
+ 496   2      LG[t]=SBUF;
+ 497   2      RI=0;                           
+ 498   2      }
+ 499   1      LG[t]='\0';
+ 500   1      for(t=0;t<11;t++)
+ 501   1      {
+ 502   2      while(RI==0);
+ 503   2      RI=0;
+ 504   2      }
+ 505   1      for(t=0;t<6;t++)
+ 506   1      {
+ 507   2      while(RI==0);
+ 508   2      RI=0;                           
+ 509   2      }
+ 510   1      lcdcmd(0x01);lcdcmd(0x80);         
+ 511   1      msgdisplay("LT:");
+ 512   1      lcdcmd(0x83);
+ 513   1      msgdisplay(LT);
+ 514   1      lcdcmd(0xC0);      
+ 515   1      msgdisplay("LG:");
+ 516   1      lcdcmd(0xC3);   
+ 517   1      msgdisplay(LG);
+ 518   1      delay(200);delay(200);delay(200);
+ 519   1      delay(200);delay(200);delay(200);
+ 520   1      rl=0;TH1=-3;TI=0;RI=0;
+ 521   1      send_sms1("AT+CMGS=\"","\"",LT,LG);
+ 522   1      delay(200);delay(200);delay(200);
+ 523   1      modem_send("AT+CMGD=1");
+ 524   1      TI=0;RI=0;
+ 525   1      delay(200);delay(200);delay(200);
+ 526   1      delay(200);delay(200);delay(200);
+ 527   1      lcdcmd(0x01);lcdcmd(0x80);
+ 528   1      msgdisplay("SMS SENT");
+ 529   1      delay(200);delay(200);delay(200);
+ 530   1      lcdcmd(0x01);lcdcmd(0x80);
+ 531   1      msgdisplay("WATING FOR SMS");
+ 532   1      delay(200);delay(200);delay(200);
+ 533   1      }
+ 534          ///////////////////////////////////////////////////////////////////////////
+ 535          void lcd_init(void)
+ 536          {
+ 537   1      lcdcmd(0x28);
+ 538   1      lcdcmd(0x28);
+ 539   1      lcdcmd(0x28);
+ 540   1      lcdcmd(0x0c);
+ 541   1      lcdcmd(0x06);
+ 542   1      lcdcmd(0x01);
+ 543   1      lcdcmd(0X80);
+ 544   1      delay(5);
+ 545   1      }
+ 546          //////////////////////////////////////////////////////////////////////////
+ 547          void lcdcmd(unsigned char value)                   // LCD COMMAND
+ 548          {
+ 549   1      lcd_data = ((value & 0xF0) | 0x08);
+ 550   1      lcd_data = 0;
+ 551   1      lcd_data = ((value << 4) | 0x08);
+C51 COMPILER V8.01   GSMGPS                                                                02/25/2013 14:45:24 PAGE 10  
+
+ 552   1      lcd_data = 0;
+ 553   1      delay(5);
+ 554   1      }  
+ 555          /////////////////////////////////////////////////////////////////////////       
+ 556          void lcddata(unsigned char value)
+ 557          {
+ 558   1      lcd_data = ((value & 0xF0) | 0x0A);
+ 559   1      lcd_data = 0;
+ 560   1      lcd_data = ((value << 4) | 0x0A);
+ 561   1      lcd_data = 0;
+ 562   1      delay(5);
+ 563   1      }  
+ 564          /////////////////////////////////////////////////////////////////////////
+ 565          void msgdisplay(unsigned char b[])
+ 566          {
+ 567   1      unsigned char s,count=0;
+ 568   1      for(s=0;b[s]!='\0';s++)
+ 569   1      {        
+ 570   2      if(s==16)
+ 571   2      lcdcmd(0xc0);
+ 572   2      if(s==32)
+ 573   2      lcdcmd(0x01);
+ 574   2      lcddata(b[s]);
+ 575   2      }
+ 576   1      }       
+ 577          ///////////////////////////////////////////////////////////////
+ 578          void delay(unsigned int value)
+ 579          {
+ 580   1      unsigned int x,y;
+ 581   1      for(x=0;x<100;x++)
+ 582   1      for(y=0;y<value;y++);
+ 583   1      } 
+ 584          ///////////////////////////////////////////////////////////////////////
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2198    ----
+   CONSTANT SIZE    =    303    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     65      24
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      2    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
